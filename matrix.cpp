@@ -4,6 +4,20 @@
 
 #include "matrix.h"
 
+namespace
+{
+  double dot(const std::vector<double>& a, const std::vector<double>& b)
+  {
+    double result{};
+    if (a.size() != b.size()) throw std::invalid_argument("Invalid dimensions for dot product!");
+    for (size_t i{}; i < a.size(); ++i)
+    {
+      result += a[i] * b[i];
+    }
+    return result;
+  }
+}
+
 Matrix::Matrix()
   : m_rows{0}
   , m_columns{0}
@@ -68,17 +82,6 @@ std::vector<double> Matrix::get_col(size_t i) const
     col.push_back(row[i]);
   }
   return col;
-}
-
-double dot(const std::vector<double>& a, const std::vector<double>& b)
-{
-  double result{};
-  if (a.size() != b.size()) throw std::invalid_argument("Invalid dimensions for dot product!");
-  for (size_t i{}; i < a.size(); ++i)
-  {
-    result += a[i] * b[i];
-  }
-  return result;
 }
 
 Matrix Matrix::matrix_mul(const Matrix& b) const
@@ -186,20 +189,6 @@ void Matrix::add_vec(std::vector<double>& v, bool to_col)
     {
       if (to_col) m_data[i][j] += v[i];
       else m_data[i][j] += v[j];
-    }
-  }
-}
-
-void Matrix::apply(std::function<double(double)> f)
-{
-  size_t rows = get_rows();
-  size_t cols = get_columns();
-
-  for (size_t i{}; i < rows; ++i)
-  {
-    for (size_t j{}; j < cols; ++j)
-    {
-      m_data[i][j] = f(m_data[i][j]);
     }
   }
 }

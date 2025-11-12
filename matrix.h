@@ -36,6 +36,4 @@ public:
   Matrix transpose() const;
 };
 
-double dot(const std::vector<double>& a, const std::vector<double>& b);
-
 #endif

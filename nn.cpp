@@ -5,12 +5,38 @@
 #include "matrix.h"
 #include "nn.h"
 
-std::vector<size_t> validateLayerCount(std::vector<size_t> neuron_counts)
+namespace
 {
-    if (neuron_counts.size() < 2)
-        throw std::invalid_argument("Network needs at least 2 layers");
-    return neuron_counts;
-}
+  std::vector<size_t> validateLayerCount(std::vector<size_t> neuron_counts)
+  {
+      if (neuron_counts.size() < 2)
+          throw std::invalid_argument("Network needs at least 2 layers");
+      return neuron_counts;
+  }
+
+  Matrix sigmoid(Matrix& z) 
+  {
+    size_t row_count = z.get_rows();
+    Matrix result(row_count, 1);
+    for (size_t i{}; i < row_count; ++i)
+    {
+      double curr = z.get(i, 0);
+      result.set(i, 0, 1/(1+exp(-curr)));
+    }
+    return result;
+  }
+
+  Matrix sigmoid_derivative(Matrix z)
+  {
+    Matrix result = sigmoid(z); // result = sigm(z)
+    Matrix temp = result;
+    temp.matrix_mul_s(-1); // result = -sigm(z)
+    temp.matrix_sub_s(-1); // result = 1-sigm(z)
+
+    result.hadamard(temp);
+    return result;
+  }
+} 
 
 NN::NN(std::vector<size_t> neuron_counts)
     : layer_count{neuron_counts.size()}
@@ -40,29 +66,6 @@ NN::NN(std::vector<size_t> neuron_counts)
       }
     }
   }
-}
-
-Matrix sigmoid(Matrix& z) 
-{
-  size_t row_count = z.get_rows();
-  Matrix result(row_count, 1);
-  for (size_t i{}; i < row_count; ++i)
-  {
-    double curr = z.get(i, 0);
-    result.set(i, 0, 1/(1+exp(-curr)));
-  }
-  return result;
-}
-
-Matrix sigmoid_derivative(Matrix z)
-{
-  Matrix result = sigmoid(z); // result = sigm(z)
-  Matrix temp = result;
-  temp.matrix_mul_s(-1); // result = -sigm(z)
-  temp.matrix_sub_s(-1); // result = 1-sigm(z)
-
-  result.hadamard(temp);
-  return result;
 }
 
 // returns lists of gradients for weights and biases
@@ -181,6 +184,18 @@ void NN::update_network(
   }
 } 
 
+Matrix NN::process(const Matrix& input)
+{
+  Matrix curr_activations = input;
+  for (size_t i{}; i < layer_count-1; ++i)
+  {
+    curr_activations = weights[i].matrix_mul(curr_activations);
+    curr_activations.matrix_add(biases[i]);
+    curr_activations = sigmoid(curr_activations);
+  }
+  return sigmoid(curr_activations);
+}
+
 void NN::train(std::vector<std::pair<Matrix, Matrix>> training_data, int epochs, size_t batch_size, double learning_rate, std::vector<std::pair<Matrix, Matrix>> test_data = {})
 {
   std::cout << "Training started!\n";
@@ -235,7 +250,7 @@ double NN::test(std::vector<std::pair<Matrix, Matrix>> test_data)
     Matrix& input = test.first;
     Matrix& correct_output = test.second;
 
-    Matrix network_output = feed_forward_with_sigm(input);
+    Matrix network_output = process(input);
     size_t max_index_correct_output{};
 
     size_t max_index_network_output{};
