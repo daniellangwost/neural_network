@@ -29,6 +29,7 @@ public:
   void hadamard(const Matrix& b);
   void matrix_mul_s(double s);
   void matrix_sub_s(double s);
+  void matrix_add_s(double s);
   void add_vec(std::vector<double>& v, bool to_col);
   void apply(std::function<double(double)> f);
   void set(size_t row, size_t col, double val);

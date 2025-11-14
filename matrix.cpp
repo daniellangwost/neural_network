@@ -146,6 +146,17 @@ void Matrix::matrix_sub_s(double s)
   }
 }
 
+void Matrix::matrix_add_s(double s)
+{
+  for (size_t i{}; i < m_rows; ++i)
+  {
+    for (size_t j{}; j < m_columns; ++j)
+    {
+      m_data[i][j] += s;
+    }
+  }
+}
+
 Matrix Matrix::transpose() const
 {
   size_t rows = get_rows();

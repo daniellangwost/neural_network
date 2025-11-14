@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <algorithm>
 #include "matrix.h"
 #include "nn.h"
 
